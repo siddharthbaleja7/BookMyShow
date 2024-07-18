@@ -38,6 +38,14 @@ export const deleteShow = async (payload) => {
         return err.response;
     }
 }
+export const getDatesByMovie = async (payload) => {
+    try{
+        const response = await axiosInstance.post('/api/shows/get-dates-by-movie', payload);
+        return response.data;
+    }catch(err){
+        return err.message
+    }
+}
 
 export const getAllTheatresByMovie = async (payload) => {
     try{

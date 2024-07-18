@@ -1,5 +1,8 @@
 const router = require('express').Router();
 const Theatre = require('../models/theatreModel');
+const Show = require('../models/showModel');
+const Booking = require('../models/bookingModel');
+
 
 router.post('/add-theatre',  async (req, res) => {
     try{
@@ -72,6 +75,9 @@ router.put('/update-theatre',  async (req, res) => {
 // Delete theatre
 router.put('/delete-theatre', async (req, res) => {
     try{
+        const shows = await Show.find({ theatre: req.body.theatreId });
+        const showIds = shows.map(show => show._id);
+        await Booking.deleteMany({ show: { $in: showIds } });
         await Theatre.findByIdAndDelete(req.body.theatreId);
         res.send({
             success: true,

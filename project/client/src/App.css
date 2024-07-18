@@ -10,6 +10,12 @@
   align-items: center;
   justify-content: center;
 }
+.d-flex{
+  display: flex;
+}
+.flex-column{
+  flex-direction: column;
+}
 .flex-1{
   flex: 1;
 }
@@ -76,11 +82,17 @@ button{
 .gap-10{
   gap: 10px;
 }
+.justify-content-center{
+  justify-content: center;
+}
 .justify-content-between{
   justify-content: space-between;
 }
 .justify-content-end{
   justify-content: end;
+}
+.align-items-center{
+  align-items: center;
 }
 .fs-12{
   font-size: 12px;

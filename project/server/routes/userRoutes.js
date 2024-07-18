@@ -21,6 +21,7 @@ router.post("/register", async (req, res) => {
         success: false,
         message: "The user already exists!",
       });
+      return;
     }
     const salt = await bcrypt.genSalt(10);
     console.log(salt);
@@ -50,6 +51,7 @@ router.post("/login", async (req, res) => {
         success: false,
         message: "user does not exist Please Register",
       });
+      return;
     }
 
     const validPassword = await bcrypt.compare(
@@ -62,6 +64,7 @@ router.post("/login", async (req, res) => {
         success: false,
         message: "Sorry, invalid password entered!",
       });
+      return;
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.secret_key_jwt, {

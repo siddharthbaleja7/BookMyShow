@@ -68,6 +68,25 @@ router.put("/update-show",  async (req, res) => {
         })
     }
 })
+// Get all the dates by movie
+router.post("/get-dates-by-movie", async (req, res) => {
+    try{
+        const {movie} = req.body;
+        let dates = await Show.find({movie}).select('date').distinct('date').sort();
+        // Filter out the dates which are in the past
+        dates = dates.filter((date) => date >= new Date());
+        res.send({
+            success: true,
+            message: 'Dates fetched!',
+            data: dates
+        });
+    }catch(err){
+        res.send({
+            success: false,
+            message: err.message
+        })
+    }
+});
 
 // Get all theatres by movie which has some shows
 router.post("/get-all-theatres-by-movie", async (req, res) => {
@@ -80,7 +99,7 @@ router.post("/get-all-theatres-by-movie", async (req, res) => {
         let uniqueTheatres = [];
         shows.forEach(show => {
             let isTheatre = uniqueTheatres.find(theatre => theatre._id === show.theatre._id);
-            if(!isTheatre){
+            if(!isTheatre && show.theatre.isActive){
                 let showsOfThisTheatre = shows.filter(showObj => showObj.theatre._id == show.theatre._id);
                 uniqueTheatres.push({...show.theatre._doc, shows: showsOfThisTheatre});
             }

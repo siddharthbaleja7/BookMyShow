@@ -2,22 +2,24 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getMovieById } from "../calls/movies";
 import { useDispatch } from "react-redux";
+import { getDatesByMovie } from "../calls/shows";
 import { hideLoading, showLoading } from "../redux/loaderSlice";
-import { message, Input, Divider, Row, Col } from "antd";
+import { message, Input, Divider, Row, Col, DatePicker } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import moment from "moment";
+import dayjs from "dayjs";
 import { getAllTheatresByMovie } from "../calls/shows";
 
 const SingleMovie = () => {
   const params = useParams();
   const [movie, setMovie] = useState();
-  const [date, setDate] = useState(moment().format("YYYY-MM-DD"));
+  const [dates, setDates] = useState([]);
   const [theatres, setTheatres] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const handleDate = (e) => {
-    setDate(moment(e.target.value).format("YYYY-MM-DD"));
-    navigate(`/movie/${params.id}?date=${e.target.value}`);
+  const handleDate = (date, dateString) => {
+    getAllTheatres(date);
+    navigate(`/movie/${params.id}?date=${dateString}`);
   };
 
   const getData = async () => {
@@ -37,10 +39,29 @@ const SingleMovie = () => {
     }
   };
 
-  const getAllTheatres = async () => {
+  const getDates = async () => {
     try {
       dispatch(showLoading());
-      const response = await getAllTheatresByMovie({ movie: params.id, date });
+      // const response = await getAllTheatresByMovie({ movie: params.id, date });
+      const response = await getDatesByMovie({ movie: params.id });
+      if (response.success) {
+        console.log(response.data);
+        setDates(response.data);
+        getAllTheatres(dayjs(response.data[0]));
+      } else {
+        message.error(response.message);
+      }
+      dispatch(hideLoading());
+    } catch (err) {
+      message.error(err.message);
+      dispatch(hideLoading());
+    }
+  };
+
+  const getAllTheatres = async (date) => {
+    try {
+      dispatch(showLoading());
+      const response = await getAllTheatresByMovie({ movie: params.id, date: date.format("YYYY-MM-DD") });
       if (response.success) {
         setTheatres(response.data);
       } else {
@@ -55,11 +76,10 @@ const SingleMovie = () => {
 
   useEffect(() => {
     getData();
+    getDates();
   }, []);
 
-  useEffect(() => {
-    getAllTheatres();
-  }, [date]);
+
 
   return (
     <>
@@ -72,14 +92,14 @@ const SingleMovie = () => {
             <div className="w-100">
               <h1 className="mt-0">{movie.title}</h1>
               <p className="movie-data">
-                Language: <span>{movie.language}</span>
+                Description: <span>{movie.description}</span>
               </p>
               <p className="movie-data">
                 Genre: <span>{movie.genre}</span>
               </p>
               <p className="movie-data">
                 Release Date:{" "}
-                <span>{moment(movie.date).format("MMM Do YYYY")}</span>
+                <span>{moment(movie.releaseDate).format("MMM Do YYYY")}</span>
               </p>
               <p className="movie-data">
                 Duration: <span>{movie.duration} Minutes</span>
@@ -88,13 +108,23 @@ const SingleMovie = () => {
 
               <div className="d-flex flex-column-mob align-items-center mt-3">
                 <label className="me-3 flex-shrink-0">Choose the date:</label>
-                <Input
+                <DatePicker
                   onChange={handleDate}
-                  type="date"
                   className="max-width-300 mt-8px-mob"
-                  value={date}
-                  placeholder="default size"
-                  prefix={<CalendarOutlined />}
+                  allowClear={false}
+                  disabled={dates.length === 0}
+                  // disable the date if it's not in the dates array
+                  disabledDate={(current) => {
+                    let check = dates.find(
+                      (date) => dayjs(date).format("YYYY-MM-DD") === current.format("YYYY-MM-DD")
+                    );
+                    return !check;
+                  }}
+                  // set the default value to the first date in the dates array
+                  defaultValue={dates.length > 0 && dayjs(dates[0])}
+                  // set the min and max date to the first and last date in the dates array
+                  minDate={dates.length > 0 && dayjs(dates[0])}
+                  maxDate={dates.length > 0 && dayjs(dates[dates.length - 1])}
                 />
               </div>
             </div>

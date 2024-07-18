@@ -37,7 +37,10 @@ const Bookings = () => {
         <>
             {bookings && <Row gutter={24}>
                 { bookings.map(booking => {
-                    return <Col key={booking._id} xs={{span: 24}} lg={{span: 12}}>
+                    // return <Col key={booking._id} xs={{span: 24}} lg={{span: 12}}>
+                    if (!booking.show.movie) return null;
+                    if (!booking.show.theatre) return null;
+                    return (<Col key={booking._id} xs={{span: 24}} lg={{span: 12}}>
                     <Card className="mb-3">
                         <div className="d-flex flex-column-mob">                
                             <div className="flex-shrink-0"><img src={booking.show.movie.poster} width={100} alt="Movie Poster"/></div>
@@ -51,7 +54,7 @@ const Bookings = () => {
                             </div>
                         </div>
                     </Card>                
-                </Col>
+                </Col>);
                 }) }    
                 
             </Row>}
